@@ -1,0 +1,177 @@
+GET https://{{host}}:{{port}}/todos
+Accept: application/json
+
+> {%
+    client.test(`Response status should be 200`, () => {
+        const expected = 200;
+        const actual = response.status;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test(`Response content-type should be text/plain`, () => {
+        const expected = "application/json";
+        const actual = response.contentType.mimeType;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+
+    client.test("Response body should contain `Hello Elysia`", () => {
+        const expected = JSON.stringify({
+            id: 1,
+            title: "First Todo",
+            status: "pending"
+        });
+
+        const actual = JSON.stringify(response.body[0]);
+        client.assert (actual === expected,
+            `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test("Setting up max id", () => {
+        client.global.set("maxId", 0);
+        response.body.forEach(todo => {
+            if(todo.id > client.global.get("maxId")) {
+                client.global.set("maxId", todo.id);
+            }
+        })
+    })
+%}
+
+###
+
+GET https://{{host}}:{{port}}/todos/1
+Accept: application/json
+
+> {%
+    client.test(`Response status should be 200`, () => {
+        const expected = 200;
+
+        const actual = response.status;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test(`Response content-type should be text/plain`, () => {
+        const expected = "application/json";
+        const actual = response.contentType.mimeType;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+
+    client.test("Response body should contain `Hello Elysia`", () => {
+        const expected = JSON.stringify({
+            id: 1,
+            title: "First Todo",
+            status: "pending"
+        });
+
+        const actual = JSON.stringify(response.body);
+        client.assert (actual === expected,
+            `Expected ${expected} but received ${actual}`);
+    });
+%}
+
+###
+
+POST https://{{host}}:{{port}}/todos
+Accept: application/json
+Content-Type: application/json
+
+{
+  "title": "test intergration",
+  "status": "progress"
+}
+
+> {%
+    client.test(`Response status should be 201`, () => {
+        const expected = 201;
+
+        const actual = response.status;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test(`Response content-type should be 'text/plain'`, () => {
+        const expected = "text/plain";
+
+        const actual = response.contentType.mimeType;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+%}
+
+###
+
+< {%
+ request.variables.set("reqId", client.global.get("maxId"))
+ %}
+
+PATCH https://{{host}}:{{port}}/todos/{{reqId}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "title": "update test integration",
+  "status": "done"
+}
+
+> {%
+    client.test(`Response status should be 200`, () => {
+        const expected = 200;
+
+        const actual = response.status;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test(`Response content-type should be 'application/json'`, () => {
+        const expected = "application/json";
+
+        const actual = response.contentType.mimeType;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+
+    client.test("Response body should contain 'First todo'", () => {
+        const expected = JSON.stringify({
+            id: Number(client.global.get("maxId")),
+            title: "update test integration",
+            status: "done"
+        });
+
+    const actual = JSON.stringify(response.body);
+    client.assert (actual === expected,
+        `Expected ${expected} but received ${actual}`);
+    });
+%}
+
+###
+
+< {%
+    request.variables.set("reqId", client.global.get("maxId"))
+%}
+
+DELETE https://{{host}}:{{port}}/todos/{{reqId}}
+Accept: application/json
+Content-Type: application/json
+
+> {%
+    client.test(`Response status should be 200`, () => {
+        const expected = 200;
+
+        const actual = response.status;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test(`Response content-type should be 'application/json'`, () => {
+        const expected = "application/json";
+
+        const actual = response.contentType.mimeType;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+
+    client.test("Response body should contain 'First todo'", () => {
+        const expected = JSON.stringify({
+            id: Number(client.global.get("maxId")),
+            title: "update test integration",
+            status: "done"
+        });
+
+        const actual = JSON.stringify(response.body);
+        client.assert (actual === expected,
+            `Expected ${expected} but received ${actual}`);
+    });
+%}

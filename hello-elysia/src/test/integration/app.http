@@ -1,0 +1,50 @@
+###
+GET https://localhost:13000
+Accept: text/plain
+
+> {%
+    client.test(`Response status should be 200`, () => {
+        const expected = 200;
+        const actual = response.status;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test(`Response content-type should be text/plain`, () => {
+        const expected = "text/html";
+        const actual = response.contentType.mimeType;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+
+    client.test("Response body should contain `Hello Elysia`", () => {
+        const expected = true;
+
+        const actual = (response.body).includes("Hello Elysia");
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+%}
+
+###
+GET https://localhost:13000/test
+Accept: text/plain
+
+> {%
+    client.test(`Response status should be 404`, () => {
+        const expected = 404;
+
+        const actual = response.status;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`);
+    });
+
+    client.test(`Response content-type should be text/plain`, () => {
+        const expected = "text/plain";
+        const actual = response.contentType.mimeType;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+
+    client.test("Response body should contain `Route not found`", () => {
+        const expected = "Route not found.";
+
+        const actual = response.body;
+        client.assert(actual === expected, `Expected ${expected} but received ${actual}`)
+    });
+%}
